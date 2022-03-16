@@ -21,7 +21,7 @@ I would like to thanks my project mentors Guilherme Amadio and Bernhard Manfred 
 ## About the Project
 
 - The folder contains the HTML, CSS, and JS files.
-- User need to run the `index.html` file to view the webpage.
+- User need to run the `index.html` file using Live Server feature in VS Code Editor to view the webpage.
 - The following would be visible on the screen:
 [![Scatter.png](https://i.postimg.cc/d12NCRH2/Scatter.png)](https://postimg.cc/8JCbQvVc)
 - The Scatter Plot has 'Cycles' Value on the X - Axis and 'Instructions' Value on the Y - Axis.
