@@ -37,7 +37,7 @@ d3.csv("geant4.csv", type, function(error, data) {
     .data(root.leaves())
     .enter().append("div")
       .attr("class", "node")
-      .attr("title", function(d) { return "Library: " + d.data.dso + "\n" + "Symbol: " + d.data.symbol + "\n" + "Cycles: " + format(d.data.cycles) + "\n" + "Instructions: " + format(d.data.instructions) + "\n" + "Branches: " + format(d.data.branches) + "\n" + "Branch-Misses: " + format(d.data.branchmiss); })
+      .attr("title", function(d) { return "Library: " + d.data.dso + "\n" + "Symbol: " + d.data.symbol + "\n" + "Cycles: " + format(d.data.cycles) + "\n" + "Instructions: " + format(d.data.instructions) + "\n" + "Branches: " + format(d.data.branches) + "\n" + "Branch-Misses: " + format(d.data.branchmisses); })
       .style("left", function(d) { return d.x0 + "px"; })
       .style("top", function(d) { return d.y0 + "px"; })
       .style("width", function(d) { return d.x1 - d.x0 + "px"; })
