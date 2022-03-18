@@ -1,4 +1,4 @@
-comm,dso,symbol,cycles,instructions,branches,branchmiss
+comm,dso,symbol,cycles,instructions,branches,branchmisses
 "g4run","libG4processes.so","G4CrossSectionDataStore::GetCrossSection",918568148449,1342007525835,214921543599,2458108336
 "g4run","libG4geometry.so","G4PolyhedraSide::DistanceAway",737047916821,1180509744631,197443613089,2635899121
 "g4run","libG4processes.so","G4GammaNuclearXS::GetIsoCrossSection",716211502127,1011027168861,162445595837,2274157871
