@@ -92,7 +92,7 @@ d3.csv('geant4.csv', function (data) {
       .append('circle')
         .attr('cx',function (d) { return xScale(d[data1]) })
         .attr('cy',function (d) { return yScale(d[data2]) })
-        .attr('r',function (d) { return (d[radius])/10**(Math.max.apply(null,DataSet[radius]).toString().length - 1.5) })
+        .attr('r',function (d) { return (d[radius]/(Math.max.apply(null,DataSet[radius])))*15 })
         .attr('stroke','black')
         .attr('stroke-width',1)
         .attr('fill',function (d) {  return colorScale(libs.indexOf(d.dso)) })
@@ -100,14 +100,14 @@ d3.csv('geant4.csv', function (data) {
           d3.select(this)
             .transition()
             .duration(500)
-            .attr('r',function (d) { return (d[radius])/10**(Math.max.apply(null,DataSet[radius]).toString().length - 1.5) + 15 })
+            .attr('r',function (d) { return 20 })
             .attr('stroke-width',3)
         })
         .on('mouseout', function () {
           d3.select(this)
             .transition()
             .duration(500)
-            .attr('r',function (d) { return (d[radius])/10**(Math.max.apply(null,DataSet[radius]).toString().length - 1.5) })
+            .attr('r',function (d) { return (d[radius]/(Math.max.apply(null,DataSet[radius])))*15 })
             .attr('stroke-width',1)
         })
         .append('title') // Tooltip
@@ -281,7 +281,7 @@ function change(data1, data2) {
       //.ease("linear")  // Transition easing - default 'variable' (i.e. has acceleration), also: 'circle', 'elastic', 'bounce', 'linear'
       .attr('cx',function (d) { return xScale(d[data1]) })
         .attr('cy',function (d) { return yScale(d[data2]) })
-        .attr('r',function (d) { return (d[radius])/10**(Math.max.apply(null,DataSet[radius]).toString().length - 1.5) }) // Circle's Y
+        .attr('r',function (d) { return (d[radius]/(Math.max.apply(null,DataSet[radius])))*15 }) // Circle's Y
       .each("end", function() {  // End animation
           d3.select(this)  // 'this' means the current element
               .transition()
