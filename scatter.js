@@ -3,9 +3,9 @@
 d3.csv('geant4.csv', function (data) {
     // Variables
     var body = d3.select('body')
-      var margin = { top: 30, right: 120, bottom: 30, left: 120 }
+      var margin = { top: 30, right: 60, bottom: 30, left: 120 }
       var h = 650 - margin.top - margin.bottom
-      var w = 760 - margin.left - margin.right
+      var w = 850 - margin.left - margin.right
       var formatPercent = d3.format('')
 
     //Unique Value List of Libs
@@ -41,11 +41,11 @@ d3.csv('geant4.csv', function (data) {
     var DataSet = { 'cycles': cyc, 'instructions': inst, 'branches': branch, 'branchmisses': miss, 'cpi': cpi, 'bmf': bmf};
 
     // Function for Determining Max Values
-    function roundtoMax(arr1, arr2) {
-        num = Math.max.apply(null,arr1);
-        leastNum = Math.min(Math.max.apply(null,arr1), Math.max.apply(null,arr2));
-        return (Math.ceil(num/(10**leastNum.toString().length))*(10**leastNum.toString().length))
-    };
+
+    function nearMax(arr) {
+      maxval = Math.max.apply(null,arr).toString();
+      return ((parseInt(maxval.slice(0,2))+1)*(10**(maxval.length-2)))
+    }
 
     // Default X-Axis, Y-Axis and Radius
     d3.select("#X[value=\"option1\"]").property("checked", true);
@@ -68,14 +68,14 @@ d3.csv('geant4.csv', function (data) {
     var xScale = d3.scale.linear()
       .domain([
           0,
-          roundtoMax(DataSet[data1], DataSet[data2])/xdiv
+          nearMax(DataSet[data1])/xdiv
           ])
       .range([0,w])
       
     var yScale = d3.scale.linear()
       .domain([
           0,
-          roundtoMax(DataSet[data2], DataSet[data1])/ydiv
+          nearMax(DataSet[data2])/ydiv
           ])
       .range([h,0])
 
@@ -93,6 +93,7 @@ d3.csv('geant4.csv', function (data) {
     // Y-axis
       var yAxis = d3.svg.axis()
         .scale(yScale)
+        .ticks(7)
         .orient('left');
 
     // Circles
@@ -272,14 +273,14 @@ function change(data1, data2, xdiv, ydiv) {
     var xScale = d3.scale.linear()
       .domain([
           0,
-          roundtoMax(DataSet[data1], DataSet[data2])/xdiv
+          nearMax(DataSet[data1])/xdiv
           ])
       .range([0,w]);
     
     var yScale = d3.scale.linear()
       .domain([
           0,
-          roundtoMax(DataSet[data2], DataSet[data1])/ydiv
+          nearMax(DataSet[data2])/ydiv
           ])
       .range([h,0]);
 
@@ -291,6 +292,7 @@ function change(data1, data2, xdiv, ydiv) {
   // Y-axis
     var yAxis = d3.svg.axis()
     .scale(yScale)
+    .ticks(7)
     .orient('left')
 
       svg.select("#x-axis")
