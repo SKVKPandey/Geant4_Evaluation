@@ -28,7 +28,7 @@ d3.csv("geant4.csv", type, function(error, data) {
     var root = d3.hierarchy(nested_data[0], function (d) { return d.values; })
             .sum(function (d) { return d.cycles; });
 
-    console.log(root)
+
 
   treemap(root);
 
