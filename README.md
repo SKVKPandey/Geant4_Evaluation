@@ -33,13 +33,6 @@ I would like to thanks my project mentors Guilherme Amadio and Bernhard Manfred 
 
 For knowing about the Scatter Plot more, checkout this: https://vimeo.com/688589546
 
-## About the Jupyter Notebook File
-
-- It contains Scatter Plot and Treemap used for Data Visualization purposes.
-- The coding has been done by using Matplotlib.Pyplot and Squarify for creating the Treemap Plot. The sample to it is:
-[![geant4.png](https://i.postimg.cc/XY9smkWT/geant4.png)](https://postimg.cc/dhtRTdLB)
-
-
 ## Acknowledgements
 
  - [Inspiration For The Project](https://summerofcode.withgoogle.com/archive/2021/organizations/6240588592054272)
