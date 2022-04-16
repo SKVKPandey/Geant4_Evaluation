@@ -2,8 +2,8 @@
 
 d3.csv('geant4.csv', function (data) {
     // Variables
-    var body = d3.select('body')
-      var margin = { top: 30, right: 60, bottom: 30, left: 120 }
+    var body = d3.select('#scatter')
+      var margin = { top: 40, right: 60, bottom: 60, left: 140 }
       var h = 550 - margin.top - margin.bottom
       var w = 750 - margin.left - margin.right
       var formatPercent = d3.format('')
@@ -69,16 +69,15 @@ d3.csv('geant4.csv', function (data) {
     d3.select("#X[value=\"option1\"]").property("checked", true);
     d3.select("#Y[value=\"option8\"]").property("checked", true);
     d3.select("#R[value=\"optionA\"]").property("checked", true);
-    d3.select("#XZ[value=\"optionX\"]").property("value", 1);
-    d3.select("#YZ[value=\"optionY\"]").property("value", 1);
+
     d3.select("#XS[value=\"optionS4\"]").property("checked", true);
     d3.select("#YS[value=\"optionS8\"]").property("checked", true);
 
     var data1 = 'cycles';
     var data2 = 'instructions';
     var radius = 'cycles';
-    var xdiv = document.getElementById('XZ').value;
-    var ydiv = document.getElementById('YZ').value;
+    var xdiv = 1;
+    var ydiv = 1;
     var xslider = document.getElementById('XZ');
     var yslider = document.getElementById('YZ');
     var Xsigma = 0;
@@ -86,20 +85,33 @@ d3.csv('geant4.csv', function (data) {
     
     // Setting the Default Plot
     // Scales
-    var colorScale = d3.scale.category20()
-    var xScale = d3.scale.linear()
+    var colorScale = d3.scaleOrdinal(d3.schemeCategory20);
+
+    for (let i=0; i<14; i++) {
+
+      strVal1 = 'c'+String(i+1)
+      strVal2 = 'l'+String(i+1)
+
+      document.getElementById(strVal1).style.backgroundColor = d3.schemeCategory20[i];
+      document.getElementById(strVal2).innerHTML = libs[i];
+
+    }
+
+    console.log(d3.schemeCategory20)
+
+    var xScale = d3.scaleLinear()
       .domain([
           0,
           nearMax(DataSet[data1])/xdiv
           ])
-      .range([0,w])
+      .range([0,w]);
       
-    var yScale = d3.scale.linear()
+    var yScale = d3.scaleLinear()
       .domain([
           0,
           nearMax(DataSet[data2])/ydiv
           ])
-      .range([h,0])
+      .range([h,0]);
 
       // SVG
       var svg = body.append('svg')
@@ -107,16 +119,31 @@ d3.csv('geant4.csv', function (data) {
           .attr('width',w + margin.left + margin.right)
         .append('g')
           .attr('transform','translate(' + margin.left + ',' + margin.top + ')');
+
       // X-axis
-      var xAxis = d3.svg.axis()
-        .scale(xScale)
-        .ticks(5)
-        .orient('bottom');
-    // Y-axis
-      var yAxis = d3.svg.axis()
-        .scale(yScale)
-        .ticks(7)
-        .orient('left');
+      var xAxis = svg.append("g")
+      .attr("transform", "translate(0," + h + ")")
+      .call(d3.axisBottom(xScale).ticks(5));
+      
+      // Y-axis
+      var yAxis = svg.append("g")
+      .call(d3.axisLeft(yScale).ticks(7));
+
+    // Add brushing
+    var brush = d3.brushX()                 // Add the brush feature using the d3.brush function
+    .extent( [ [0,0], [w,h] ] )
+    .on("end", updateChart); // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
+
+
+    // Create the scatter variable: where both the circles and the brush take place
+    var scatter = svg.append('g')
+      .attr("clip-path", "url(#clip)");
+
+    // Add the brushing
+    scatter
+    .append("g")
+      .attr("class", "brush")
+      .call(brush);
 
     // Circles
     var circles = svg.selectAll('circle')
@@ -149,35 +176,64 @@ d3.csv('geant4.csv', function (data) {
         .append('title') // Tooltip
         .text(function (d) { return 'Library: ' + d.dso + '\nSymbols: ' + d.symbol + '\nCycles: ' + d.cycles + '\nInstructions: ' + d.instructions + '\nBranches: ' + d.branches + '\nBranch-Misses: ' + d.branchmisses + '\nCPI: ' + d.cpi + '\nBranch-Miss Factor: ' + d.bmf});
 
-        
 
-    // X-axis
-    svg.append('g')
-        .attr('class','axis')
-        .attr('transform', 'translate(0,' + h + ')')
-        .attr("id", "x-axis")
-        .call(xAxis)
-      .append('text') // X-axis Label
-        .attr('id','x-label')
-        .attr('y',-10)
-        .attr('x',w)
-        .attr('dy','.71em')
-        .style('text-anchor','end')
-        .text(data1.charAt(0).toUpperCase() + data1.slice(1));
-        
-    // Y-axis
-    svg.append('g')
-        .attr('class', 'axis')
-        .attr("id", "y-axis")
-        .call(yAxis)
-      .append('text') // y-axis Label
-        .attr('id','y-label')
-        .attr('transform','rotate(-90)')
-        .attr('x',0)
-        .attr('y',5)
-        .attr('dy','.71em')
-        .style('text-anchor','end')
-        .text(data2.charAt(0).toUpperCase() + data2.slice(1));
+    // A function that set idleTimeOut to null
+    var idleTimeout
+    function idled() { idleTimeout = null; }
+
+    var minVal 
+    var maxVal 
+
+    // A function that update the chart for given boundaries
+    function updateChart() {
+
+      extent = d3.event.selection
+
+      if (extent != null) {
+        minVal = xScale.invert(extent[0])
+        maxVal = xScale.invert(extent[1])
+      }
+
+      // If no selection, back to initial coordinate. Otherwise, update X axis domain
+      if(!extent){
+        if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
+        xScale.domain([ 0, nearMax(DataSet[data1])/xdiv])
+        svg
+        .selectAll("circle")
+        .transition().duration(1000)
+        .attr('cx',function (d) { return xScale(d[data1]) })
+        .attr('cy',function (d) { return yScale(d[data2]) })
+        .attr('r',function (d) { return (d[radius]/(Math.max.apply(null,DataSet[radius])))*15 } ); // This remove the grey brush area as soon as the selection has been done
+      }else{
+        xScale.domain([ xScale.invert(extent[0]), xScale.invert(extent[1]) ])
+        svg.select(".brush").call(brush.move, null)
+        xAxis.transition().duration(1000).call(d3.axisBottom(xScale).ticks(5));
+        svg
+          .selectAll("circle")
+          .transition().duration(1000)
+          .attr('cx',function (d) { return xScale(d[data1]) })
+          .attr('cy',function (d) { return yScale(d[data2]) })
+          .attr('r',function (d) { if (d[data1]<=maxVal & d[data1]>=minVal) {return (d[radius]/(Math.max.apply(null,DataSet[radius])))*15} else {return 0} } ); // This remove the grey brush area as soon as the selection has been done
+      }
+
+      xAxis.transition().duration(1000).call(d3.axisBottom(xScale).ticks(5));
+    
+    }
+
+    var xText = svg.append("text")             
+      .attr("transform",
+            "translate(" + (w/2) + " ," + 
+                           (h + margin.top + 10) + ")")
+      .style("text-anchor", "middle")
+      .text(data1.charAt(0).toUpperCase() + data1.slice(1));
+
+    var yText = svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left + 15)
+      .attr("x",0 - (h / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text(data2.charAt(0).toUpperCase() + data2.slice(1));
 
     d3.selectAll("input")
 	    .on("change", selectDataset);
@@ -273,16 +329,6 @@ d3.csv('geant4.csv', function (data) {
       else if (value == "optionF")
 	    {
 		    radius = 'bmf';
-		    change(data1, data2, xdiv, ydiv, Xsigma, Ysigma);
-	    }
-      else if (xslider.value!=xdiv)
-	    {
-        xdiv = xslider.value;
-		    change(data1, data2, xdiv, ydiv, Xsigma, Ysigma);
-	    }
-      else if (yslider.value!=ydiv)
-	    {
-        ydiv = yslider.value;
 		    change(data1, data2, xdiv, ydiv, Xsigma, Ysigma);
 	    }
       else if (value == "optionS1")
@@ -393,76 +439,36 @@ function change(data1, data2, xdiv, ydiv, Xsigma, Ysigma) {
     }
 
     // Update scale domains
-    var colorScale = d3.scale.category20()
-    var xScale = d3.scale.linear()
+    var colorScale = d3.scaleOrdinal(d3.schemeCategory20);
+    xScale = d3.scaleLinear()
       .domain([
           Xmin,
           Xmax
           ])
       .range([0,w]);
     
-    var yScale = d3.scale.linear()
+    yScale = d3.scaleLinear()
       .domain([
           Ymin,
           Ymax
           ])
       .range([h,0]);
 
-    // X-axis
-    var xAxis = d3.svg.axis()
-    .scale(xScale)
-    .ticks(5)
-    .orient('bottom')
-  // Y-axis
-    var yAxis = d3.svg.axis()
-    .scale(yScale)
-    .ticks(7)
-    .orient('left')
+    xAxis.transition().duration(1000).call(d3.axisBottom(xScale).ticks(5));
 
-      svg.select("#x-axis")
-        .transition()
-        .duration(1000)
-        .call(xAxis);
+    yAxis.transition().duration(1000).call(d3.axisLeft(yScale).ticks(7));
 
-      svg.select('#x-label')
-        .transition()
-        .duration(1000)
-        .attr('y',-10)
-        .attr('x',w)
-        .attr('dy','.71em')
-        .style('text-anchor','end')
-        .text(data1.charAt(0).toUpperCase() + data1.slice(1));
+    xText.transition().duration(1000).text().text(data1.charAt(0).toUpperCase() + data1.slice(1));
 
-      svg.select("#y-axis")
-        .transition()
-        .duration(1000)
-        .call(yAxis)
-
-      svg.select('#y-label')
-        .attr('transform','rotate(-90)')
-        .attr('x',0)
-        .attr('y',5)
-        .attr('dy','.71em')
-        .style('text-anchor','end')
-        .text(data2.charAt(0).toUpperCase() + data2.slice(1));
+    yText.transition().duration(1000).text().text(data2.charAt(0).toUpperCase() + data2.slice(1));
 
       // Update circles
-      svg.selectAll("circle")
+    svg.selectAll("circle")
       .data(data)  // Update with new data
       .transition()  // Transition from old to new
       .duration(1000)  // Length of animation
-      .each("start", function() {  // Start animation
-          d3.select(this)  // 'this' means the current element
-              .attr("r", 1);  // Change size
-      })
       .delay(500) // Dynamic delay (i.e. each item delays a little longer)
-      //.ease("linear")  // Transition easing - default 'variable' (i.e. has acceleration), also: 'circle', 'elastic', 'bounce', 'linear'
       .attr('cx',function (d) { return xScale(d[data1]) })
         .attr('cy',function (d) { return yScale(d[data2]) })
-        .attr('r',function (d) { if (d[data1]<=Xmax & d[data1]>=Xmin & d[data2]<=Ymax & d[data2]>=Ymin ) {return (d[radius]/(Math.max.apply(null,DataSet[radius])))*15} else {return 0} }) // Circle's Y
-      .each("end", function() {  // End animation
-          d3.select(this)  // 'this' means the current element
-              .transition()
-              .duration(500)
-    });
+        .attr('r',function (d) { if (d[data1]<=Xmax & d[data1]>=Xmin & d[data2]<=Ymax & d[data2]>=Ymin ) {return (d[radius]/(Math.max.apply(null,DataSet[radius])))*15} else {return 0} } ) ;
 }})
